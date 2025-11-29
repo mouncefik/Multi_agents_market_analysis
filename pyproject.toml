@@ -1,0 +1,28 @@
+[project]
+name = "market-agents"
+version = "0.1.0"
+description = "this is package manager of market agents project"
+authors = [
+    {name = "mouncef",email = "mouncefik@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain",
+    "langchain-community",
+    "langchain-openai",
+    "langchain-google-genai",
+    "langgraph",
+    "duckduckgo-search",
+    "python-dotenv",
+    "gradio (>=5.0.0,<6.0.0)",
+    "ddgs (>=9.9.1,<10.0.0)",
+    "matplotlib (>=3.10.7,<4.0.0)",
+    "markdown (>=3.10,<4.0)",
+    "fpdf2 (>=2.8.5,<3.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
