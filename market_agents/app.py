@@ -15,12 +15,12 @@ class ReportPDF(FPDF):
         
     def header(self):
         if self.page_no() > 1:
-            self.set_draw_color(226, 232, 240)
+            self.set_draw_color(226, 232, 240) 
             self.line(20, 25, 190, 25)
             
             self.set_y(15)
             self.set_font('helvetica', 'B', 9)
-            self.set_text_color(100, 116, 139)
+            self.set_text_color(100, 116, 139)  # Slate-500
             self.cell(0, 10, 'MARKET INTELLIGENCE REPORT', new_x=XPos.RIGHT, new_y=YPos.TOP, align='L')
             
             self.set_font('helvetica', '', 9)
@@ -35,24 +35,28 @@ class ReportPDF(FPDF):
             
             self.set_y(-15)
             self.set_font('helvetica', '', 8)
-            self.set_text_color(148, 163, 184)
+            self.set_text_color(148, 163, 184)  # Slate-400
             self.cell(0, 10, f'Page {self.page_no()}', new_x=XPos.RIGHT, new_y=YPos.TOP, align='C')
             self.set_text_color(0, 0, 0)
     
     def add_cover_page(self):
         self.add_page()
         
-        self.set_fill_color(99, 102, 241)
+        # Geometric Background
+        self.set_fill_color(99, 102, 241)  # Indigo-500
         self.rect(0, 0, 210, 297, 'F')
         
+        # White Content Card
         self.set_fill_color(255, 255, 255)
         self.rect(20, 40, 170, 217, 'F')
         
-        self.set_fill_color(79, 70, 229)
+        # Decorative Accent
+        self.set_fill_color(79, 70, 229)  # Indigo-600
         self.rect(20, 40, 170, 10, 'F')
         
+        # Content
         self.set_y(80)
-        self.set_text_color(30, 41, 59)
+        self.set_text_color(30, 41, 59)  # Slate-800
         self.set_font('helvetica', 'B', 32)
         self.multi_cell(0, 14, 'MARKET\nRESEARCH\nREPORT', 0, 'C')
         
@@ -63,9 +67,10 @@ class ReportPDF(FPDF):
         
         self.ln(20)
         self.set_font('helvetica', '', 16)
-        self.set_text_color(71, 85, 105)
+        self.set_text_color(71, 85, 105)  # Slate-600
         self.multi_cell(0, 10, self.topic, 0, 'C')
         
+        # Footer Info
         self.set_y(220)
         self.set_font('helvetica', 'B', 10)
         self.set_text_color(148, 163, 184)
@@ -82,6 +87,7 @@ def export_pdf(markdown_content, chart_paths, topic="Market Research"):
     if not markdown_content:
         return None
     
+    # Sanitize text
     replacements = {
         '\u2018': "'", '\u2019': "'",
         '\u201c': '"', '\u201d': '"',
@@ -96,19 +102,21 @@ def export_pdf(markdown_content, chart_paths, topic="Market Research"):
     pdf.add_cover_page()
     pdf.add_page()
     
+    # Executive Summary Styling
     pdf.set_font('helvetica', 'B', 14)
-    pdf.set_text_color(79, 70, 229)
+    pdf.set_text_color(79, 70, 229)  # Indigo-600
     pdf.cell(0, 10, 'EXECUTIVE SUMMARY', new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='L')
     pdf.ln(2)
     
+    # Parse content
     sections = markdown_content.split('##')
     
     for i, section in enumerate(sections):
         if not section.strip(): continue
         
-        if i == 0:
+        if i == 0:  # Intro/Exec Summary
             pdf.set_font('helvetica', '', 11)
-            pdf.set_text_color(51, 65, 85)
+            pdf.set_text_color(51, 65, 85)  # Slate-700
             
             safe_text = section.strip().encode('latin-1', 'replace').decode('latin-1')
             import re
@@ -123,6 +131,7 @@ def export_pdf(markdown_content, chart_paths, topic="Market Research"):
             if 'Visualizations' in section_title or 'visualization' in section_title.lower():
                 continue
             
+            # Section Header
             if pdf.get_y() > 250: pdf.add_page()
             
             pdf.set_font('helvetica', 'B', 14)
@@ -132,6 +141,7 @@ def export_pdf(markdown_content, chart_paths, topic="Market Research"):
             pdf.line(20, pdf.get_y(), 190, pdf.get_y())
             pdf.ln(5)
             
+            # Content
             pdf.set_font('helvetica', '', 11)
             pdf.set_text_color(51, 65, 85)
             safe_text = section_content.strip().encode('latin-1', 'replace').decode('latin-1')
@@ -139,6 +149,7 @@ def export_pdf(markdown_content, chart_paths, topic="Market Research"):
             pdf.multi_cell(0, 6, safe_text)
             pdf.ln(8)
     
+    # Visualizations Section
     if chart_paths:
         pdf.add_page()
         pdf.set_font('helvetica', 'B', 14)
@@ -190,6 +201,7 @@ class HistoryManager:
         
         os.makedirs(report_dir)
         
+        # Save metadata
         metadata = {
             "id": report_id,
             "topic": topic,
@@ -198,18 +210,22 @@ class HistoryManager:
             "pdf": "report.pdf" if pdf_path else None
         }
         
+        # Save report content
         with open(os.path.join(report_dir, "report.md"), "w", encoding="utf-8") as f:
             f.write(report_content)
             
+        # Copy charts
         for chart_path in chart_paths:
             if os.path.exists(chart_path):
                 chart_name = os.path.basename(chart_path)
                 shutil.copy2(chart_path, os.path.join(report_dir, chart_name))
                 metadata["charts"].append(chart_name)
                 
+        # Copy PDF
         if pdf_path and os.path.exists(pdf_path):
             shutil.copy2(pdf_path, os.path.join(report_dir, "report.pdf"))
             
+        # Save metadata json
         with open(os.path.join(report_dir, "metadata.json"), "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=4)
             
@@ -230,6 +246,7 @@ class HistoryManager:
                 except:
                     continue
         
+        # Sort by date descending
         return sorted(reports, key=lambda x: x["id"], reverse=True)
 
     def load_report(self, report_id):
@@ -237,12 +254,15 @@ class HistoryManager:
         if not os.path.exists(report_dir):
             return None
             
+        # Load content
         with open(os.path.join(report_dir, "report.md"), "r", encoding="utf-8") as f:
             content = f.read()
             
+        # Load metadata
         with open(os.path.join(report_dir, "metadata.json"), "r", encoding="utf-8") as f:
             meta = json.load(f)
             
+        # Get chart paths
         chart_paths = [os.path.join(report_dir, c) for c in meta["charts"]]
         pdf_path = os.path.join(report_dir, "report.pdf") if meta["pdf"] else None
         
@@ -277,6 +297,7 @@ def create_timeline_html(completed_steps, current_step=None):
         
         status_class = "completed" if is_completed else ("current" if is_current else "pending")
         
+        # Handle loop back visualization (if researcher is active but analyst was completed)
         if step == "researcher" and "analyst" in completed_steps and current_step == "researcher":
             status_class = "current"
             
@@ -296,6 +317,7 @@ def create_timeline_html(completed_steps, current_step=None):
         </div>
         """
         
+        # Add connector line except after last item
         if idx < len(all_steps) - 1:
             connector_class = "completed" if completed_steps and all_steps.index(completed_steps[-1]) > idx else "pending"
             html += f'<div class="timeline-connector {connector_class}"></div>'
@@ -312,6 +334,7 @@ def generate_report(topic, provider):
         graph = MarketResearchGraph(model_provider=provider.lower())
         completed_steps = []
         
+        # Initial state
         initial_html = create_timeline_html([], None)
         yield initial_html, "", [], None, gr.Button(value="Agents Working ⏳", interactive=False, variant="secondary"), gr.update(choices=[])
         
@@ -319,9 +342,11 @@ def generate_report(topic, provider):
             if step_name not in completed_steps:
                 completed_steps.append(step_name)
             
+            # Find all chart files
             chart_paths = [f for f in os.listdir() if f.startswith("chart_") and f.endswith(".png")]
             chart_paths.sort()
             
+            # Determine next step
             all_steps = ["researcher", "analyst", "reviewer", "chart_generator", "writer"]
             try:
                 current_idx = all_steps.index(step_name)
@@ -329,6 +354,7 @@ def generate_report(topic, provider):
             except ValueError:
                 next_step = None
             
+            # If reviewer sends back to researcher, reset completed steps partially or just show status
             if step_name == "reviewer" and step_output.get("feedback"):
                 # Loop detected
                 next_step = "researcher"
@@ -338,11 +364,13 @@ def generate_report(topic, provider):
             
             if step_name == "writer":
                 final_report = step_output.get("final_report", "")
+                # Generate PDF with topic
                 pdf_path = export_pdf(final_report, chart_paths, topic)
                 
                 # Save to history
                 history_manager.save_report(topic, final_report, chart_paths, pdf_path)
                 
+                # Update history list
                 history = history_manager.get_history()
                 history_choices = [f"{h['date']} - {h['topic']}" for h in history]
                 
@@ -704,11 +732,13 @@ def app():
 
     with gr.Blocks(theme=theme, css=css, title="Market Research Agents") as demo:
         with gr.Column(elem_classes="container"):
+            # Header
             with gr.Column(elem_classes="header"):
                 gr.HTML("<h1><span class='material-symbols-outlined'>rocket_launch</span>Market Research AI System</h1>")
                 gr.Markdown("Intelligent market analysis powered by multi-agent AI collaboration")
 
             with gr.Row():
+                # Sidebar (History)
                 with gr.Column(scale=1, min_width=300):
                     with gr.Column(elem_classes="glass-card"):
                         gr.Markdown("### 📂 Report History")
@@ -721,6 +751,7 @@ def app():
                         )
                         load_btn = gr.Button("Load Report", variant="secondary")
 
+                # Main Content
                 with gr.Column(scale=3):
                     # Command Center
                     with gr.Group(elem_classes="glass-card"):
@@ -748,6 +779,19 @@ def app():
                             size="lg",
                             elem_classes="primary",
                             elem_id="submit-btn"
+                        )
+
+                    # Results Area
+                    with gr.Column(elem_classes="results-section"):
+                        gr.HTML("<div class='results-title'><span class='material-symbols-outlined'>analytics</span>Research Dashboard</div>")
+                        
+                        # Status & Downloads
+                        with gr.Row():
+                            with gr.Column(scale=2):
+                                status_output = gr.HTML(
+                                    value="<div style='padding: 20px; text-align: center; color: #64748b;'>Ready to start research...</div>",
+                                    label="Agent Workflow"
+                                )
                             with gr.Column(scale=1):
                                 with gr.Group(elem_classes="glass-card"):
                                     gr.Markdown("### 📥 Exports")
@@ -755,6 +799,7 @@ def app():
                                     audio_btn = gr.Button("Generate Audio Brief 🎧", variant="secondary")
                                     audio_output = gr.Audio(label="Podcast Summary", type="filepath", show_label=False)
 
+                        # Content Tabs
                         with gr.Tabs(elem_classes="tabs"):
                             with gr.TabItem("📄 Full Report", elem_id="tab-report"):
                                 output_display = gr.Markdown(
